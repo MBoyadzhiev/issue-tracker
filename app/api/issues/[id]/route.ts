@@ -53,39 +53,36 @@
 //     return NextResponse.json({ message: "Issue deleted successfully" });
 // }
 
-
 import { issueSchema, patchIssueSchema } from "@/app/validationSchemas";
 import { prisma } from "@/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 // PATCH route
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    // Await the 'params' Promise to extract 'id'
+    const { id } = await params;
+
     const body = await request.json();
     const validation = patchIssueSchema.safeParse(body);
-    if (!validation.success) {
+    if (!validation.success)
         return NextResponse.json(validation.error.format(), { status: 400 });
-    }
 
     const { assignedToUserId, title, description } = body;
 
     if (assignedToUserId) {
         const user = await prisma.user.findUnique({
-            where: { id: assignedToUserId },
+            where: { id: assignedToUserId }
         });
 
-        if (!user) {
+        if (!user) 
             return NextResponse.json({ error: "Invalid User" }, { status: 400 });
-        }
     }
 
-    // Ensure params.id is correctly parsed as an integer
     const issue = await prisma.issue.findUnique({
-        where: { id: parseInt(params.id) }, // `params.id` should be a string, parse it as an integer
+        where: { id: parseInt(id) }  // Use 'id' from params
     });
-
-    if (!issue) {
+    if (!issue)
         return NextResponse.json({ error: "Invalid Issue" }, { status: 404 });
-    }
 
     const updatedIssue = await prisma.issue.update({
         where: { id: issue.id },
@@ -93,26 +90,27 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
             title,
             description,
             assignedToUserId,
-        },
+        }
     });
 
     return NextResponse.json(updatedIssue);
 }
 
 // DELETE route
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-    // Ensure params.id is correctly parsed as an integer
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    // Await the 'params' Promise to extract 'id'
+    const { id } = await params;
+
     const issue = await prisma.issue.findUnique({
-        where: { id: parseInt(params.id) }, // `params.id` should be a string, parse it as an integer
+        where: { id: parseInt(id) }  // Use 'id' from params
     });
 
-    if (!issue) {
-        return NextResponse.json({ error: "Invalid Issue" }, { status: 404 });
-    }
+    if (!issue) return NextResponse.json({ error: "Invalid Issue" }, { status: 404 });
 
     await prisma.issue.delete({
-        where: { id: issue.id },
+        where: { id: issue.id }
     });
 
     return NextResponse.json({ message: "Issue deleted successfully" });
 }
+
