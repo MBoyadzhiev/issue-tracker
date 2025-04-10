@@ -57,13 +57,14 @@ import IssueDetails from "./IssueDetails";
 import DeleteIssueButton from "./DeleteIssueButton";
 import AssigneeSelect from "./AssigneeSelect";
 
+// Adjusted Props to account for dynamic params correctly
 interface Props {
   params: {
     id: string;
   };
 }
 
-// Directly use prisma for fetching the issue (no need for `cache`)
+// Fetch issue with Prisma
 const fetchIssue = async (issueId: number) => {
   return await prisma.issue.findUnique({
     where: { id: issueId },
@@ -93,6 +94,7 @@ const IssueDetailPage = async ({ params }: Props) => {
   );
 };
 
+// Metadata generation, keeping the async call as necessary
 export async function generateMetadata({ params }: Props) {
   const issue = await fetchIssue(parseInt(params.id)); // Fetch issue for metadata
 
