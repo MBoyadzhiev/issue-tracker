@@ -57,18 +57,20 @@ import IssueDetails from "./IssueDetails";
 import DeleteIssueButton from "./DeleteIssueButton";
 import AssigneeSelect from "./AssigneeSelect";
 import { cache } from "react";
+import { use } from "next/navigation";
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 const fetchUser = cache((issueId: number) =>
   prisma.issue.findUnique({ where: { id: issueId } })
 );
 
-const IssueDetailPage = async ({ params }: Props) => {
-  const { id } = await params;
-  const issue = await fetchUser(parseInt(id));
+const IssueDetailPage = () => {
+  const params = use("params");
+  const id = params.id;
+  const issue = fetchUser(parseInt(id));
 
   if (!issue) notFound();
 
@@ -89,8 +91,9 @@ const IssueDetailPage = async ({ params }: Props) => {
 };
 
 // The 'generateMetadata' function can also be updated similarly
-export async function generateMetadata({ params }: Props) {
-  const { id } = await params;
+export async function generateMetadata() {
+  const params = use("params");
+  const id = params.id;
   const issue = await fetchUser(parseInt(id));
 
   return {
