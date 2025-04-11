@@ -59,7 +59,7 @@ import AssigneeSelect from "./AssigneeSelect";
 import { cache } from "react";
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 const fetchUser = cache((issueId: number) =>
@@ -67,8 +67,8 @@ const fetchUser = cache((issueId: number) =>
 );
 
 const IssueDetailPage = async ({ params }: Props) => {
-  // No need for the 'use' hook, just use async/await to fetch the data
-  const issue = await fetchUser(parseInt(params.id));
+  const { id } = await params;
+  const issue = await fetchUser(parseInt(id));
 
   if (!issue) notFound();
 
@@ -90,7 +90,8 @@ const IssueDetailPage = async ({ params }: Props) => {
 
 // The 'generateMetadata' function can also be updated similarly
 export async function generateMetadata({ params }: Props) {
-  const issue = await fetchUser(parseInt(params.id));
+  const { id } = await params;
+  const issue = await fetchUser(parseInt(id));
 
   return {
     title: issue?.title ?? "Issue not found", // Handle case where issue is not found
