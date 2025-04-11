@@ -13,10 +13,11 @@ const AssigneeSelect = ({ issue }: { issue: Issue }) => {
   if (isLoading) return <Skeleton />;
 
   if (error) return null;
+
   const assignIssue = (userId: string) => {
     axios
       .patch("/api/issues/" + issue.id, {
-        assignedToUserId: userId === "unassigned" ? null : userId,
+        assignedToUserId: userId || null,
       })
       .catch(() => {
         toast.error("Changes could not be saved.");
@@ -26,14 +27,14 @@ const AssigneeSelect = ({ issue }: { issue: Issue }) => {
   return (
     <>
       <Select.Root
-        defaultValue={issue.assignedToUserId || "unassigned"}
+        defaultValue={issue.assignedToUserId || ""}
         onValueChange={assignIssue}
       >
-        <Select.Trigger placeholder="Asign ..." />
+        <Select.Trigger placeholder="Assign..." />
         <Select.Content>
           <Select.Group>
             <Select.Label>Suggestions</Select.Label>
-            <Select.Item value="unassigned">Unassigned</Select.Item>
+            <Select.Item value="">Unassigned</Select.Item>
             {users?.map((user) => (
               <Select.Item key={user.id} value={user.id}>
                 {user.name}
@@ -51,7 +52,7 @@ const useUsers = () =>
   useQuery<User[]>({
     queryKey: ["users"],
     queryFn: () => axios.get("/api/users").then((res) => res.data),
-    staleTime: 60 * 1000,
+    staleTime: 60 * 1000, //60s
     retry: 3,
   });
 

@@ -1,53 +1,42 @@
 import Pagination from "@/app/components/Pagination";
 import { prisma } from "@/prisma/client";
-import { Issue, Status } from "@prisma/client";
+import { Status } from "@prisma/client";
 import IssueActions from "./IssueActions";
-import IssueTable, { columnNames } from "./IssueTable";
+import IssueTable, { IssueQuery, columnNames } from "./IssueTable";
 import { Flex } from "@radix-ui/themes";
 import { Metadata } from "next";
 
 interface Props {
-  searchParams: Record<string, string | string[] | undefined>;
-  page: string;
+  searchParams: IssueQuery;
 }
 
-const IssuesPage = async (props: Props) => {
-  const searchParams = await props.searchParams;
-  const rawStatus = searchParams.status as Status | undefined;
-  const rawOrderBy = searchParams.orderBy as keyof Issue | undefined;
-
-  // Validate status filter
+const IssuesPage = async ({ searchParams }: Props) => {
   const statuses = Object.values(Status);
-  const isValidStatus = statuses.includes(rawStatus as Status);
-  const statusFilter = isValidStatus ? { status: rawStatus } : {};
+  const status = statuses.includes(searchParams.status)
+    ? searchParams.status
+    : undefined;
+  const where = { status };
 
-  // Validate orderBy filter
-  const validOrderByKeys = columnNames;
-  const isValidOrderBy = validOrderByKeys.includes(rawOrderBy as keyof Issue);
-  const orderBy = isValidOrderBy
-    ? { [rawOrderBy as keyof Issue]: "asc" }
+  const orderBy = columnNames.includes(searchParams.orderBy)
+    ? { [searchParams.orderBy]: "asc" }
     : undefined;
 
-  const rawPage = Array.isArray(searchParams.page)
-    ? searchParams.page[0]
-    : searchParams.page;
-  const page = Math.max(parseInt(rawPage || "1"), 1);
+  const page = parseInt(searchParams.page) || 1;
   const pageSize = 10;
 
-  // Fetch issues from the database
   const issues = await prisma.issue.findMany({
-    where: statusFilter,
-    ...(orderBy && { orderBy }),
+    where,
+    orderBy,
     skip: (page - 1) * pageSize,
     take: pageSize,
   });
 
-  const issueCount = await prisma.issue.count({ where: statusFilter });
+  const issueCount = await prisma.issue.count({ where });
 
   return (
     <Flex direction="column" gap="3">
       <IssueActions />
-      <IssueTable searchParams={searchParams} page={page.toString()} />
+      <IssueTable searchParams={searchParams} issues={issues} />
       <Pagination
         pageSize={pageSize}
         currentPage={page}
@@ -57,7 +46,6 @@ const IssuesPage = async (props: Props) => {
   );
 };
 
-// Force dynamic rendering for the page
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {

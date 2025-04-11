@@ -1,44 +1,23 @@
 import { IssueStatusBadge } from "@/app/components";
-import { prisma } from "@/prisma/client";
-import { Issue, Status } from "@prisma/client";
 import { ArrowUpIcon } from "@radix-ui/react-icons";
 import { Table } from "@radix-ui/themes";
 import Link from "next/link";
-import NextLink from "next/link";
 import React from "react";
+import NextLink from "next/link";
+import { Issue, Status } from "@prisma/client";
 
-interface Props {
-  searchParams: Record<string, string | string[] | undefined>;
+export interface IssueQuery {
+  status: Status;
+  orderBy: keyof Issue;
   page: string;
 }
 
-const IssueTable = async (props: Props) => {
-  const searchParams = await props.searchParams;
-  const rawStatus = searchParams.status as Status | undefined;
-  const rawOrderBy = searchParams.orderBy as keyof Issue | undefined;
+interface Props {
+  searchParams: IssueQuery;
+  issues: Issue[];
+}
 
-  const statuses = Object.values(Status);
-  const isValidStatus = statuses.includes(rawStatus as Status);
-  const statusFilter = isValidStatus ? { status: rawStatus } : {};
-
-  const validOrderByKeys = columns.map((column) => column.value);
-  const isValidOrderBy = validOrderByKeys.includes(rawOrderBy as keyof Issue);
-  const orderBy = isValidOrderBy
-    ? { [rawOrderBy as keyof Issue]: "asc" }
-    : undefined;
-
-  const rawPage = Array.isArray(searchParams.page)
-    ? searchParams.page[0]
-    : searchParams.page;
-  const page = Math.max(parseInt(rawPage || "1"), 1);
-  const pageSize = 10;
-
-  const issues = await prisma.issue.findMany({
-    where: statusFilter,
-    ...(orderBy && { orderBy }),
-    skip: (page - 1) * pageSize,
-    take: pageSize,
-  });
+const IssueTable = ({ searchParams, issues }: Props) => {
   return (
     <Table.Root variant="surface">
       <Table.Header>
@@ -50,16 +29,15 @@ const IssueTable = async (props: Props) => {
             >
               <NextLink
                 href={{
-                  pathname: "/issues/list",
                   query: {
-                    status: rawStatus, // Pass the raw status for the query
-                    orderBy: column.value, // Pass the column value for ordering
+                    ...searchParams,
+                    orderBy: column.value,
                   },
                 }}
               >
                 {column.label}
               </NextLink>
-              {column.value === rawOrderBy && (
+              {column.value === searchParams.orderBy && (
                 <ArrowUpIcon className="inline" />
               )}
             </Table.ColumnHeaderCell>
@@ -94,8 +72,16 @@ const columns: {
   className?: string;
 }[] = [
   { label: "Issue", value: "title" },
-  { label: "Status", value: "status", className: "hidden md:table-cell" },
-  { label: "Created", value: "createdAt", className: "hidden md:table-cell" },
+  {
+    label: "Status",
+    value: "status",
+    className: "hidden md:table-cell",
+  },
+  {
+    label: "Created",
+    value: "createdAt",
+    className: "hidden md:table-cell",
+  },
 ];
 
 export const columnNames = columns.map((column) => column.value);

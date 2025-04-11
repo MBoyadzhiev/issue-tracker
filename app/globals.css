@@ -1,7 +1,6 @@
-@import "tailwindcss/preflight";
+@tailwind base;
+@tailwind components;
 @tailwind utilities;
-@tailwind utilities;
-@import "tailwindcss";
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -17,9 +16,7 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  
 }
-
 
 @layer utilities {
   .nav-link {

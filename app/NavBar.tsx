@@ -1,8 +1,10 @@
 "use client";
+
+import { Skeleton } from "@/app/components";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { BsBugFill } from "react-icons/bs";
+import { AiFillBug } from "react-icons/ai";
 import classnames from "classnames";
 import { useSession } from "next-auth/react";
 import {
@@ -13,7 +15,6 @@ import {
   Flex,
   Text,
 } from "@radix-ui/themes";
-import Skeleton from "react-loading-skeleton";
 
 const NavBar = () => {
   return (
@@ -22,7 +23,7 @@ const NavBar = () => {
         <Flex justify="between">
           <Flex align="center" gap="3">
             <Link href="/">
-              <BsBugFill />
+              <AiFillBug />
             </Link>
             <NavLinks />
           </Flex>
@@ -34,12 +35,13 @@ const NavBar = () => {
 };
 
 const NavLinks = () => {
-  const currentPaht = usePathname();
+  const currentPath = usePathname();
 
   const links = [
     { label: "Dashboard", href: "/" },
     { label: "Issues", href: "/issues/list" },
   ];
+
   return (
     <ul className="flex space-x-6">
       {links.map((link) => (
@@ -47,7 +49,7 @@ const NavLinks = () => {
           <Link
             className={classnames({
               "nav-link": true,
-              "!text-zinc-900": link.href === currentPaht,
+              "!text-zinc-900": link.href === currentPath,
             })}
             href={link.href}
           >
@@ -70,6 +72,7 @@ const AuthStatus = () => {
         Login
       </Link>
     );
+
   return (
     <Box>
       <DropdownMenu.Root>
@@ -77,16 +80,18 @@ const AuthStatus = () => {
           <Avatar
             src={session!.user!.image!}
             fallback="?"
+            size="2"
             radius="full"
             className="cursor-pointer"
+            referrerPolicy="no-referrer"
           />
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Label>
-            <Text size="3">{session!.user!.email}</Text>
+            <Text size="2">{session!.user!.email}</Text>
           </DropdownMenu.Label>
           <DropdownMenu.Item>
-            <Link href="/api/auth/signout">Logout</Link>
+            <Link href="/api/auth/signout">Log out</Link>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
