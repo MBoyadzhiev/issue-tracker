@@ -57,6 +57,7 @@ import IssueDetails from "./IssueDetails";
 import DeleteIssueButton from "./DeleteIssueButton";
 import AssigneeSelect from "./AssigneeSelect";
 import { cache } from "react";
+import { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ id: string }>; // Define params as a promise
@@ -88,8 +89,11 @@ const IssueDetailPage = async ({ params }: PageProps) => {
   );
 };
 
-// The 'generateMetadata' function can also be updated similarly
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
   const { id } = await params; // Await the params to get the id
   const issue = await fetchUser(parseInt(id));
 
