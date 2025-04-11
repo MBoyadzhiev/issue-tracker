@@ -58,8 +58,11 @@ import DeleteIssueButton from "./DeleteIssueButton";
 import AssigneeSelect from "./AssigneeSelect";
 import { cache } from "react";
 
-const fetchUser = cache((issueId: number) =>
-  prisma.issue.findUnique({ where: { id: issueId } })
+const fetchUser = cache(
+  (
+    issueId: number
+  ): Promise<Awaited<ReturnType<typeof prisma.issue.findUnique>>> =>
+    prisma.issue.findUnique({ where: { id: issueId } })
 );
 
 const IssueDetailPage = async ({ params }: { params: { id: string } }) => {
