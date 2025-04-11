@@ -59,7 +59,7 @@ import AssigneeSelect from "./AssigneeSelect";
 import { cache } from "react";
 
 interface PageProps {
-  params: Promise<{ id: string }>; // Adjust this based on the actual expected type
+  params: { id: string }; // Correctly define params as an object
 }
 
 const fetchUser = cache((issueId: number) =>
@@ -67,8 +67,7 @@ const fetchUser = cache((issueId: number) =>
 );
 
 const IssueDetailPage = async ({ params }: PageProps) => {
-  const resolvedParams = await params; // Await the promise if necessary
-  const issue = await fetchUser(parseInt(resolvedParams.id));
+  const issue = await fetchUser(parseInt(params.id)); // No need to await params
 
   if (!issue) notFound();
 
@@ -90,8 +89,7 @@ const IssueDetailPage = async ({ params }: PageProps) => {
 
 // The 'generateMetadata' function can also be updated similarly
 export async function generateMetadata({ params }: PageProps) {
-  const resolvedParams = await params; // Await the promise if necessary
-  const issue = await fetchUser(parseInt(resolvedParams.id));
+  const issue = await fetchUser(parseInt(params.id)); // No need to await params
 
   return {
     title: issue?.title ?? "Issue not found",
