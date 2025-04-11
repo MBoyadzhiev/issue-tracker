@@ -57,21 +57,21 @@ import IssueDetails from "./IssueDetails";
 import DeleteIssueButton from "./DeleteIssueButton";
 import AssigneeSelect from "./AssigneeSelect";
 import { cache } from "react";
-import type { Metadata } from "next";
 
-// ✅ define params type expected by Next.js
-interface PageProps {
+interface Props {
   params: {
     id: string;
   };
 }
 
-const fetchUser = cache(async (issueId: number) => {
-  return prisma.issue.findUnique({ where: { id: issueId } });
-});
+const fetchUser = cache((issueId: number) =>
+  prisma.issue.findUnique({ where: { id: issueId } })
+);
 
-const IssueDetailPage = async ({ params }: PageProps) => {
-  const issue = await fetchUser(parseInt(params.id));
+const IssueDetailPage = async ({ params }: Props) => {
+  const { id } = params; // params is already resolved, no need to wrap it in a promise
+  const issue = await fetchUser(parseInt(id)); // Use the id directly here
+
   if (!issue) notFound();
 
   return (
@@ -90,16 +90,14 @@ const IssueDetailPage = async ({ params }: PageProps) => {
   );
 };
 
-export const generateMetadata = async ({
-  params,
-}: PageProps): Promise<Metadata> => {
-  const issue = await fetchUser(parseInt(params.id));
+export async function generateMetadata({ params }: Props) {
+  const { id } = params; // Extract id from params (params is not a promise here)
+  const issue = await fetchUser(parseInt(id)); // Use the id to fetch the issue
+
   return {
-    title: issue?.title ?? "Issue not found",
-    description: issue
-      ? `Details of issue ${issue.id}`
-      : "No issue data available",
+    title: issue?.title ?? "Issue not found", // Handle case when issue is not found
+    description: `Details of issue ${issue?.id}`,
   };
-};
+}
 
 export default IssueDetailPage;
