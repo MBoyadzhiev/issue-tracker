@@ -64,12 +64,10 @@ interface Props {
   };
 }
 
-// Memoized fetch function using React cache
 const fetchUser = cache((issueId: number) =>
   prisma.issue.findUnique({ where: { id: issueId } })
 );
 
-// ✅ Async page component (required for accessing params in Next.js 15)
 const IssueDetailPage = async ({ params }: Props) => {
   const issue = await fetchUser(parseInt(params.id));
 
@@ -91,7 +89,6 @@ const IssueDetailPage = async ({ params }: Props) => {
   );
 };
 
-// ✅ generateMetadata now also needs to be async, and uses async `params`
 export async function generateMetadata({ params }: Props) {
   const issue = await fetchUser(parseInt(params.id));
 
