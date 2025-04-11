@@ -57,15 +57,20 @@ import IssueDetails from "./IssueDetails";
 import DeleteIssueButton from "./DeleteIssueButton";
 import AssigneeSelect from "./AssigneeSelect";
 import { cache } from "react";
+import type { Metadata } from "next";
 
-const fetchUser = cache(
-  (
-    issueId: number
-  ): Promise<Awaited<ReturnType<typeof prisma.issue.findUnique>>> =>
-    prisma.issue.findUnique({ where: { id: issueId } })
-);
+// ✅ define params type expected by Next.js
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
 
-const IssueDetailPage = async ({ params }: { params: { id: string } }) => {
+const fetchUser = cache(async (issueId: number) => {
+  return prisma.issue.findUnique({ where: { id: issueId } });
+});
+
+const IssueDetailPage = async ({ params }: PageProps) => {
   const issue = await fetchUser(parseInt(params.id));
   if (!issue) notFound();
 
@@ -85,7 +90,9 @@ const IssueDetailPage = async ({ params }: { params: { id: string } }) => {
   );
 };
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export const generateMetadata = async ({
+  params,
+}: PageProps): Promise<Metadata> => {
   const issue = await fetchUser(parseInt(params.id));
   return {
     title: issue?.title ?? "Issue not found",
@@ -93,6 +100,6 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
       ? `Details of issue ${issue.id}`
       : "No issue data available",
   };
-}
+};
 
 export default IssueDetailPage;
