@@ -57,20 +57,18 @@ import IssueDetails from "./IssueDetails";
 import DeleteIssueButton from "./DeleteIssueButton";
 import AssigneeSelect from "./AssigneeSelect";
 import { cache } from "react";
-import { use } from "next/navigation";
 
-interface Props {
-  params: { id: string };
+interface PageProps {
+  params: Promise<{ id: string }>; // Adjust this based on the actual expected type
 }
 
 const fetchUser = cache((issueId: number) =>
   prisma.issue.findUnique({ where: { id: issueId } })
 );
 
-const IssueDetailPage = () => {
-  const params = use("params");
-  const id = params.id;
-  const issue = fetchUser(parseInt(id));
+const IssueDetailPage = async ({ params }: PageProps) => {
+  const resolvedParams = await params; // Await the promise if necessary
+  const issue = await fetchUser(parseInt(resolvedParams.id));
 
   if (!issue) notFound();
 
@@ -91,13 +89,12 @@ const IssueDetailPage = () => {
 };
 
 // The 'generateMetadata' function can also be updated similarly
-export async function generateMetadata() {
-  const params = use("params");
-  const id = params.id;
-  const issue = await fetchUser(parseInt(id));
+export async function generateMetadata({ params }: PageProps) {
+  const resolvedParams = await params; // Await the promise if necessary
+  const issue = await fetchUser(parseInt(resolvedParams.id));
 
   return {
-    title: issue?.title ?? "Issue not found", // Handle case where issue is not found
+    title: issue?.title ?? "Issue not found",
     description: `Details of issue ${issue?.id}`,
   };
 }
