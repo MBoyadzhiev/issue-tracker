@@ -56,11 +56,10 @@ import EditIssueButton from "./EditIssueButton";
 import IssueDetails from "./IssueDetails";
 import DeleteIssueButton from "./DeleteIssueButton";
 import AssigneeSelect from "./AssigneeSelect";
-import { use } from "react";
 import { cache } from "react";
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 const fetchUser = cache((issueId: number) =>
@@ -68,9 +67,8 @@ const fetchUser = cache((issueId: number) =>
 );
 
 const IssueDetailPage = async ({ params }: Props) => {
-  const { id } = use(params); // Use the 'use' hook to resolve the promise
-
-  const issue = await fetchUser(parseInt(id));
+  // No need for the 'use' hook, just use async/await to fetch the data
+  const issue = await fetchUser(parseInt(params.id));
 
   if (!issue) notFound();
 
@@ -90,10 +88,9 @@ const IssueDetailPage = async ({ params }: Props) => {
   );
 };
 
+// The 'generateMetadata' function can also be updated similarly
 export async function generateMetadata({ params }: Props) {
-  const { id } = use(params); // Use the 'use' hook here as well to resolve the promise
-
-  const issue = await fetchUser(parseInt(id));
+  const issue = await fetchUser(parseInt(params.id));
 
   return {
     title: issue?.title ?? "Issue not found", // Handle case where issue is not found
