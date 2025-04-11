@@ -58,19 +58,12 @@ import DeleteIssueButton from "./DeleteIssueButton";
 import AssigneeSelect from "./AssigneeSelect";
 import { cache } from "react";
 
-interface Props {
-  params: {
-    id: string;
-  };
-}
-
 const fetchUser = cache((issueId: number) =>
   prisma.issue.findUnique({ where: { id: issueId } })
 );
 
-const IssueDetailPage = async ({ params }: Props) => {
+const IssueDetailPage = async ({ params }: { params: { id: string } }) => {
   const issue = await fetchUser(parseInt(params.id));
-
   if (!issue) notFound();
 
   return (
@@ -89,9 +82,8 @@ const IssueDetailPage = async ({ params }: Props) => {
   );
 };
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: { params: { id: string } }) {
   const issue = await fetchUser(parseInt(params.id));
-
   return {
     title: issue?.title ?? "Issue not found",
     description: issue
